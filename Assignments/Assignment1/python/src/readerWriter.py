@@ -1,40 +1,4 @@
-# from threading import Semaphore
-
-
-# class LightSwitch:
-#     def __init__(self):
-#         self.counter = 0
-#         self.mutex = Semaphore(1)
-
-#     def lock(self, semaphore):
-#         self.mutex.wait()
-#         self.counter += 1
-#         if self.counter == 1:
-#             semaphore.wait()
-#         self.mutex.signal()
-
-#     def unlock(self, semaphore):
-#         self.mutex.wait()
-#         self.counter -= 1
-#         if self.counter == 0:
-#             semaphore.signal()
-#         self.mutex.signal()
-
-# readLightSwitch = LightSwitch()
-# roomEmpty = Semaphore(1)
-
-# roomEmpty.wait()
-# # Critical section for writers
-# roomEmpty.signal()
-
-# readLightSwitch.lock(roomEmpty)
-# # Critical section for readers
-# readLightSwitch.unlock(roomEmpty)
-
-# NOTE: The above solution can starve writers
-# Solution: Use Turnstile
-
-from utils import Semaphore, Thread
+from utils import Semaphore, Thread, execution_manager
 import time
 import os
 import signal
@@ -69,18 +33,6 @@ roomEmpty = Semaphore(1)
 turnstile = Semaphore(1)  # Turnstile for readers and mutex for writers
 
 
-def execution_manager():
-    child = os.fork()
-    if child == 0:
-        return
-    try:
-        os.wait()
-    except KeyboardInterrupt:
-        print('Keyboard Interrupt: Killing the Program')
-        os.kill(child, signal.SIGKILL)
-    sys.exit()
-
-
 def writer(i):
     global score
     while True:
@@ -107,7 +59,7 @@ def reader(i):
         # Critical section for readers
         print("Reader {} is reading {}".format(i, score))
         time.sleep(random.random() * 5)
-        
+
         readSwitch.unlock(roomEmpty)
         time.sleep(random.random() * 10)
 
