@@ -39,6 +39,7 @@ import time
 import os
 import signal
 import sys
+import random
 
 
 class LightSwitch:
@@ -82,22 +83,33 @@ def execution_manager():
 
 def writer(i):
     global score
-    while 1:
+    while True:
         time.sleep(random.random())
+        turnstile.wait()
         roomEmpty.wait()
+
         # Critical Section for writers
         score += 1
         print("Writer {} is writing {}".format(i, score))
+        time.sleep(random.random() * 5)
+
+        turnstile.signal()
         roomEmpty.signal()
 
 
 def reader(i):
     global score, readSwitch
     while True:
+        turnstile.wait()
+        turnstile.signal()
         readSwitch.lock(roomEmpty)
+
         # Critical section for readers
         print("Reader {} is reading {}".format(i, score))
+        time.sleep(random.random() * 5)
+        
         readSwitch.unlock(roomEmpty)
+        time.sleep(random.random() * 10)
 
 execution_manager()
 [Thread(writer, i) for i in range(num_writers)]
