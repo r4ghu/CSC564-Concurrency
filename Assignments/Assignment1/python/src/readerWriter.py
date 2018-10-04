@@ -1,7 +1,6 @@
 from utils import Semaphore, Thread, execution_manager
 import time
 import os
-import signal
 import sys
 import random
 
@@ -66,8 +65,3 @@ def reader(i):
 execution_manager()
 [Thread(writer, i) for i in range(num_writers)]
 [Thread(reader, i) for i in range(num_readers)]
-
-
-
-
-

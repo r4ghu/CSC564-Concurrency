@@ -15,11 +15,15 @@ items = Semaphore(0)
 buffer = Buffer()
 
 
+def delay(n=1):
+    return time.sleep(random.random() * n)
+
+
 def Producer():
     global buffer
     data = 0
     while True:
-        time.sleep(random.random() * 2)
+        delay(2)
         event = WaitForEvent(data)
         print("Producing event {}".format(event.data))
         mutex.wait()
@@ -37,7 +41,7 @@ def Consumer():
         event = buffer.get()
         mutex.signal()
         print("Consuming event {}".format(event.data))
-        time.sleep(random.random())
+        delay()
         event.process()
 
 
