@@ -62,6 +62,6 @@ def reader(i):
         readSwitch.unlock(roomEmpty)
         time.sleep(random.random() * 10)
 
-execution_manager()
+#execution_manager()
 [Thread(writer, i) for i in range(num_writers)]
 [Thread(reader, i) for i in range(num_readers)]

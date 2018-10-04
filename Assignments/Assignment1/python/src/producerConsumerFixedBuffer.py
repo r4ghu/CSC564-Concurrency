@@ -13,6 +13,8 @@ class WaitForEvent:
 mutex = Semaphore(1)
 items = Semaphore(0)
 buffer = Buffer()
+buffer_size = 10
+spaces = Semaphore(buffer_size)
 
 
 def delay(n=1):
@@ -26,6 +28,7 @@ def Producer():
         delay(2)
         event = WaitForEvent(data)
         print("Producing event {}".format(event.data))
+        spaces.wait()
         mutex.wait()
         buffer.add(event)
         mutex.signal()
@@ -40,11 +43,12 @@ def Consumer():
         mutex.wait()
         event = buffer.get()
         mutex.signal()
+        spaces.signal()
         print("Consuming event {}".format(event.data))
         delay()
         event.process()
 
 
-#execution_manager() # Forces a global parent thread
+#execution_manager()
 Thread(Producer)
 Thread(Consumer)
