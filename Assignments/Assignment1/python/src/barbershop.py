@@ -1,56 +1,42 @@
+# Link: https://github.com/nicolas3470/Python-synchronization/blob/master/q05.py
 from utils import execution_manager, Semaphore, Thread
-import time, random 
+import time
+import random
 
-# a. Use semaphores to simulate a (sleepy) barbershop.
-#
-#    A barbershop holds N customers, and M sleepy barbers 
-#    work on the customers. Correctness criteria are:
-#
-#    (a) no customers should enter the barbershop unless
-#        there is room for them inside
-#    (b) the barber should cut hair if there is a waiting
-#        customer
-#    (c) customers should enter the barbershop if there is 
-#        room inside
-#
-#    This is a sleepy town with laid back people, so strict 
-#    FIFO ordering of waiting customers is not a requirement.
-#
 
 def delay():
     time.sleep(random.randint(0, 2))
 
+
 class BarberShop:
-    def __init__(self, numchairs):
-        self.open_seats = numchairs
+    def __init__(self, num_seats):
+        self.available_seats = num_seats
         self.seats_mutex = Semaphore(1)
         self.customers = Semaphore(0)
         self.barbers = Semaphore(0)
-        
-    # check for waiting customers
-    # if there are none, wait
-    # if there are waiting customers, signal one 
-    def barber_readytocut(self):
+
+    def barber_ready(self):
+        # Barber is ready
+        # Signal one of the waiting customers
         self.customers.wait()
         self.seats_mutex.wait()
-        self.open_seats += 1
+        self.available_seats += 1
         self.barbers.signal()
         self.seats_mutex.signal()
 
-    # enter the barbershop if all numchairs are not occupied
-    # returns true if the customer entered successfully, and
-    # false if he was turned away at the door
     def customer_enter(self):
+        # Return True, if customer sat
+        # Else, return false, customer left
         self.seats_mutex.wait()
-        if self.open_seats > 0:
-            self.open_seats -= 1
+        if self.available_seats > 0:
+            self.available_seats -= 1
             return True
         else:
             self.seats_mutex.signal()
             return False
 
-    # take a seat and wait until the barber is ready to cut hair
-    def customer_takeaseat(self):
+    def customer_sit(self):
+        # Sit until Barber is ready
         self.customers.signal()
         self.seats_mutex.signal()
         self.barbers.wait()
@@ -59,23 +45,23 @@ class BarberShop:
 def Barber(i):
     global barbershop
     while True:
-        print("Barber {}: ready to cut hair".format(i))
-        barbershop.barber_readytocut()
-        print("Barber {}: cutting hair".format(i))
+        print("Barber {}: Ready".format(i))
+        barbershop.barber_ready()
+        print("Barber {}: Started cutting hair".format(i))
         delay()
-        print("Barber {}: done cutting hair".format(i))
+        print("Barber {}: DONE".format(i))
 
 
 def Customer(i):
     global barbershop
     while True:
-        print ("Customer #%d: has long hair" % i)
+        print("Customer {}: Arrived to barber shop".format(i))
         if barbershop.customer_enter():
-            print ("Customer #%d: entered, taking a seat" % i)
-            barbershop.customer_takeaseat()
-            print ("Customer #%d: got a haircut!" % i)
+            print("Customer {}: Entered and Sat".format(i))
+            barbershop.customer_sit()
+            print("Customer {}: Successful Haircut!".format(i))
         else:
-            print ("Customer #%d: turned away from the door" % i)
+            print("Customer {}: Turned away from the door".format(i))
         delay()
 
 
@@ -84,6 +70,6 @@ num_customers = 6
 num_seats = 3
 barbershop = BarberShop(num_seats)
 
-execution_manager()
+#execution_manager()
 [Thread(Barber, i) for i in range(num_barbers)]
 [Thread(Customer, i) for i in range(num_customers)]
