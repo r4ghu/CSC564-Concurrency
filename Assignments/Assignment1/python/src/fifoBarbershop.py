@@ -52,6 +52,6 @@ num_customers = 6
 num_seats = 3
 barbershop = BarberShop(num_seats)
 
-execution_manager()
+#execution_manager()
 [Thread(Barber, i) for i in range(num_barbers)]
 [Thread(Customer, i) for i in range(num_customers)] 
