@@ -16,7 +16,7 @@ class General(threading.Thread):
     N = 7 # Generals
     M = 2 # Traitors
     
-    def __init__(self,isCommander,isTraitor,ID) :
+    def __init__(self, isCommander, isTraitor, ID, max_recursion=None) :
         threading.Thread.__init__(self)
         self.isCommander = isCommander
         self.isTraitor = isTraitor
@@ -26,6 +26,7 @@ class General(threading.Thread):
         self.finish = False
         self.finalVote = 0
         self.mutex = threading.Lock()
+        self.max_recursion = General.N-1 if max_recursion is None else max_recursion
 	   
     def run(self) :
         # Start running the thread
@@ -69,7 +70,7 @@ class General(threading.Thread):
             elif self.finalVote < 0:
                 self.thread_log(self, "Voted: RETREAT")
 			   
-    def vote(self, path, msg, m):
+    def vote(self, path, msg, m, recursive_step = 0):
         '''
         Recursive method to vote the general's final decision
         '''
@@ -84,9 +85,9 @@ class General(threading.Thread):
                 temp_path = copy.copy(path)
                 temp_path.append(g)
                 msg = self.get_message(temp_path)
-                
-                result = self.vote(temp_path,msg,m-1)
-                results.append(result)
+                if recursive_step < self.max_recursion:
+                    result = self.vote(temp_path, msg, m-1, recursive_step=recursive_step+1)
+                    results.append(result)
             # Voting phase
             if results.count(MESSAGE) > len(results)/2 : 
                 return MESSAGE
@@ -175,7 +176,7 @@ def main(N=7, M=2):
             if istraitor :
                 m +=1
         # G_0 is always the commander
-        g = General(i == 0, istraitor, i)
+        g = General(i == 0, istraitor, i, 2)
         generals.append(g)
         g.start()
     
