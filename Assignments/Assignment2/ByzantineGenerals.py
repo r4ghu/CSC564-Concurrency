@@ -160,7 +160,7 @@ class General(threading.Thread):
             self.mutex.release()
 
 
-def main(N=7, M=2):
+def main(N=7, M=2, max_recursion = None):
     General.N = N
     General.M = M
 
@@ -176,7 +176,7 @@ def main(N=7, M=2):
             if istraitor :
                 m +=1
         # G_0 is always the commander
-        g = General(i == 0, istraitor, i, 2)
+        g = General(i == 0, istraitor, i, max_recursion=max_recursion)
         generals.append(g)
         g.start()
     
@@ -185,4 +185,5 @@ def main(N=7, M=2):
 
 
 if __name__ == '__main__':
-	main(3,1)
+	# Test 1
+    main(N=20, M=1, max_recursion=4)
